@@ -1,5 +1,5 @@
 # Shoot
-##NathanB
+## NathanB
 
 ## Description  
 *Shoot* est un jeu de tir en vue du dessus où vous incarnez un personnage devant survivre à des vagues de monstres apparaissant aléatoirement autour de l'écran.  

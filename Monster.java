@@ -8,16 +8,18 @@ public class Monster {
     private double speed;
     private int health;
     private int damage;
+    private int points;
     private BufferedImage monsterSprite;
     private final int size = 40;
     private Player player;
 
-    public Monster(double x, double y, MonsterType type, Player player) {
+    public Monster(double x, double y, MonsterType type, Double speedMultiplier, Player player) {
         this.x = x;
         this.y = y;
         this.health = type.health;
         this.damage = type.damage;
-        this.speed = type.speed;
+        this.speed = type.speed * speedMultiplier;
+        this.points = type.points;
         this.player = player;
         
         try {
@@ -62,6 +64,10 @@ public class Monster {
 
     public int getDamage() {
         return damage;
+    }
+
+    public int getPoints() {
+        return points;
     }
 
     public double getX() {

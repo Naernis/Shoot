@@ -6,8 +6,8 @@ import java.io.IOException;
 public class Bullet {
     private int x, y;
     private double dx, dy;
-    private final int width = 10;
-    private final int height = 10;
+    private final int width = 18;
+    private final int height = 18;
     private BufferedImage spriteBullet;
 
     // Stat des balles et recherche de l'image

@@ -7,7 +7,7 @@ import java.io.IOException;
 public class Player {
     private int x, y;
     private final int speed = 3;
-    private final int size = 20;
+    private final int size = 40;
     private int health = 10;
     private int maxHealth = 10;
     private boolean left, right, up, down;

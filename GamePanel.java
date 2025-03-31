@@ -2,10 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private Timer timer;
     private Player player;
+    private int score = 0;
 
     private ArrayList<Bullet> bullets;
     private long lastShotTime = 0;
@@ -13,13 +15,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     private ArrayList<Monster> monsters = new ArrayList<>();
     private long lastMonsterSpawn = 0;
-    private final long MONSTER_SPAWN_INTERVAL = 2000;
 
     private boolean gameOver = false;
 
     // Écran du jeu
     public GamePanel() {
-        setPreferredSize(new Dimension(600, 600));
+        setPreferredSize(new Dimension(800, 800));
         setBackground(Color.BLACK);
         player = new Player(250, 250);
         bullets = new ArrayList<>();
@@ -33,24 +34,28 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             public void mousePressed(MouseEvent e) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - lastShotTime >= RELOAD_TIME) {
-
+        
                     int startX = player.getX() + player.getSize() / 2;
                     int startY = player.getY() + player.getSize() / 2;
                     int targetX = e.getX();
                     int targetY = e.getY();
-                    double angle = Math.atan2(targetY - startY, targetX - startX);
-
-                    double dx = Math.cos(angle) * 10;
-                    double dy = Math.sin(angle) * 10;
-
+        
+                    // Calcul du vecteur direction
+                    double dx = targetX - startX;
+                    double dy = targetY - startY;
+                    double length = Math.sqrt(dx * dx + dy * dy);
+        
+                    // Normalisation du vecteur (pour garder une vitesse constante)
+                    dx = (dx / length) * 10;
+                    dy = (dy / length) * 10;
+        
                     bullets.add(new Bullet(startX, startY, dx, dy));
                     lastShotTime = currentTime;
                 }
             }
         });
-        setFocusable(true);
-    }
-
+      setFocusable(true);
+    } 
     // Vérification des événements (monstre touché ? mort ? apparition de monstre ?
     // etc...)
     @Override
@@ -60,7 +65,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         bullets.removeIf(b -> b.isOffScreen(getWidth(), getHeight()));
 
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastMonsterSpawn >= MONSTER_SPAWN_INTERVAL) {
+        if (currentTime - lastMonsterSpawn >= getSpawnInterval()) {
             spawnMonster();
             lastMonsterSpawn = currentTime;
         }
@@ -77,6 +82,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     m.takeDamage(1);
                     bulletsToRemove.add(b);
                     if (m.isDead()) {
+                        score += m.getPoints();
                         monstersToRemove.add(m);
                     }
                 }
@@ -130,21 +136,39 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                 y = (int) (Math.random() * getHeight());
                 break;
         }
+
+    //Ajout des monstre plus fort au fur est à mesure du jeu
+        ArrayList<MonsterType> availableTypes = new ArrayList<>();
+        availableTypes.addAll(Arrays.asList(MonsterType.BASIC, MonsterType.HIT, MonsterType.FAST));
+
+        if (score >= 100) {
+            availableTypes.addAll(Arrays.asList(MonsterType.STRANGE, MonsterType.TANK, MonsterType.LOVE));
+        }
+        if (score >= 250) {
+            availableTypes.add(MonsterType.PERFECT); 
+        }
+        if (score >= 450 ) {
+            availableTypes.add(MonsterType.BOSS);
+        }
     
-        // Sélection aléatoire du type de monstre
-        MonsterType[] types = MonsterType.values();
-        MonsterType randomType = types[(int) (Math.random() * types.length)];
-    
-        monsters.add(new Monster(x, y, randomType, player));
+        MonsterType randomType = availableTypes.get((int) (Math.random() * availableTypes.size()));
+
+        
+        double speedMultiplier = 1.0 + (score / 1000.0); //Ajout de +1% de vitesse tout les 100 points
+        monsters.add(new Monster(x, y, randomType, speedMultiplier, player));
     }
 
-    // Affichage de tout les éléments (joueur, balles, monstres, barre de vie)
+    // Affichage de tout les éléments (joueur, balles, monstres, score, barre de vie)
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         player.draw(g);
         bullets.forEach(b -> b.draw(g));
         monsters.forEach(m -> m.draw(g));
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("Score: " + score, 15, getWidth() - 10); 
 
         g.setColor(Color.RED);
         g.fillRect(10, 10, 200, 20);
@@ -157,7 +181,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         if (gameOver) {
             g.setFont(new Font("Arial", Font.BOLD, 40));
             g.setColor(Color.WHITE);
-            g.drawString("GAME OVER", 180, getHeight() / 2);
+            g.drawString("GAME OVER", getWidth() / 3, getHeight() / 2);
         }
     }
 
@@ -173,5 +197,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
+    }
+
+    private long getSpawnInterval() { //Ajout de l'intervalle d'apparition des monstres avec le score
+        return 1800 - (score * 1);  
     }
 }

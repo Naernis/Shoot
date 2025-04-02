@@ -1,61 +1,45 @@
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class GamePanel extends JPanel implements ActionListener, KeyListener {
+public class GamePanel extends JPanel implements ActionListener {
     private Timer timer;
     private Player player;
     private int score = 0;
 
     private ArrayList<Bullet> bullets;
-    private long lastShotTime = 0;
-    private final long RELOAD_TIME = 250;
-
     private ArrayList<Monster> monsters = new ArrayList<>();
     private long lastMonsterSpawn = 0;
 
     private boolean gameOver = false;
 
+    private BufferedImage background;
+
     // Écran du jeu
     public GamePanel() {
-        setPreferredSize(new Dimension(800, 800));
+        setPreferredSize(new Dimension(700, 700));
         setBackground(Color.BLACK);
         player = new Player(250, 250);
         bullets = new ArrayList<>();
         timer = new Timer(16, this);
         timer.start();
-        addKeyListener(this);
 
-        // Détection du clique (pour le tir)
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - lastShotTime >= RELOAD_TIME) {
-        
-                    int startX = player.getX() + player.getSize() / 2;
-                    int startY = player.getY() + player.getSize() / 2;
-                    int targetX = e.getX();
-                    int targetY = e.getY();
-        
-                    // Calcul du vecteur direction
-                    double dx = targetX - startX;
-                    double dy = targetY - startY;
-                    double length = Math.sqrt(dx * dx + dy * dy);
-        
-                    // Normalisation du vecteur (pour garder une vitesse constante)
-                    dx = (dx / length) * 10;
-                    dy = (dy / length) * 10;
-        
-                    bullets.add(new Bullet(startX, startY, dx, dy));
-                    lastShotTime = currentTime;
-                }
-            }
-        });
-      setFocusable(true);
-    } 
+        //Fond du jeux
+        try {
+            background = ImageIO.read(getClass().getResource("/resources/background.jpg"));
+        } catch (IOException e) {
+                e.printStackTrace();
+        }
+
+    addMouseListener(new MouseHandler(player, bullets)); 
+    addKeyListener(new KeyboardHandler(player));
+    setFocusable(true);
+    }
     // Vérification des événements (monstre touché ? mort ? apparition de monstre ?
     // etc...)
     @Override
@@ -158,10 +142,15 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         monsters.add(new Monster(x, y, randomType, speedMultiplier, player));
     }
 
-    // Affichage de tout les éléments (joueur, balles, monstres, score, barre de vie)
+    // Affichage de tout les éléments (joueur, fond, balles, monstres, score, barre de vie)
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        if (background != null) {
+            g.drawImage(background, 0, 0, getWidth(), getHeight(), null);
+        }
+
         player.draw(g);
         bullets.forEach(b -> b.draw(g));
         monsters.forEach(m -> m.draw(g));
@@ -178,25 +167,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         g.setColor(Color.WHITE);
         g.drawRect(10, 10, 200, 20);
 
+
         if (gameOver) {
             g.setFont(new Font("Arial", Font.BOLD, 40));
             g.setColor(Color.WHITE);
             g.drawString("GAME OVER", getWidth() / 3, getHeight() / 2);
         }
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        player.keyPressed(e);
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        player.keyReleased(e);
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
     }
 
     private long getSpawnInterval() { //Ajout de l'intervalle d'apparition des monstres avec le score

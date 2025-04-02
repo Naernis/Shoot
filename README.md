@@ -14,3 +14,7 @@
 ✔ **Score** Ajout affichage score
 ✔ **Tir** Précision du tir augmenter
 ✔ **Difficulté croissante** Plus le score est haut plus il y a de monstre et plus il sont rapide
+
+## Mise à jour (Mercredi 2 Avril 2025)
+✔ **Séparation fichier** Séparation des fichiers pour alléger le code
+✔ **Fond** Ajout d'un fond pour le jeu

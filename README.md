@@ -3,6 +3,7 @@
 
 ## Description  
 *Shoot* est un jeu de tir en vue du dessus où vous incarnez un personnage devant survivre à des vagues de monstres apparaissant aléatoirement autour de l'écran.  
+Le projet initialement fait il y a quelques années mais remis au propre en mars 2025.
 
 ## Fonctionnalités  
 ✔ **Mouvement** Avec les touches directionnelles (`ZQSD` ou `Flèches`)  
